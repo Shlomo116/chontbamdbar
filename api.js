@@ -350,29 +350,90 @@ class TzolentAPI {
 
     // Sync data across devices (simulate cloud sync)
     syncData() {
-        // In a real application, this would sync with a server
-        // For now, we'll just ensure data consistency
         const data = this.getData();
         if (data) {
             // Add sync timestamp
             data.lastSync = new Date().toISOString();
+            data.syncVersion = (data.syncVersion || 0) + 1;
             this.saveData(data);
+            
+            // Simulate cloud storage by using a shared storage key
+            this.saveToCloudStorage(data);
         }
         return true;
     }
 
+    // Save to cloud storage simulation
+    saveToCloudStorage(data) {
+        try {
+            // Use a shared storage key that all devices can access
+            const cloudKey = 'tzolent_cloud_data';
+            const cloudData = {
+                ...data,
+                cloudSync: true,
+                lastCloudSync: new Date().toISOString()
+            };
+            localStorage.setItem(cloudKey, JSON.stringify(cloudData));
+            return true;
+        } catch (error) {
+            console.error('Cloud storage error:', error);
+            return false;
+        }
+    }
+
+    // Load from cloud storage
+    loadFromCloudStorage() {
+        try {
+            const cloudKey = 'tzolent_cloud_data';
+            const cloudData = localStorage.getItem(cloudKey);
+            if (cloudData) {
+                return JSON.parse(cloudData);
+            }
+            return null;
+        } catch (error) {
+            console.error('Cloud load error:', error);
+            return null;
+        }
+    }
+
     // Check for data updates
     checkForUpdates() {
-        const data = this.getData();
-        if (!data) return false;
+        const localData = this.getData();
+        const cloudData = this.loadFromCloudStorage();
         
-        // Check if data was updated recently
-        const lastSync = data.lastSync ? new Date(data.lastSync) : new Date(0);
-        const now = new Date();
-        const timeDiff = now - lastSync;
+        if (!localData && !cloudData) return false;
+        if (!localData && cloudData) {
+            // Load from cloud if no local data
+            this.saveData(cloudData);
+            return true;
+        }
+        if (!cloudData && localData) return false;
         
-        // Consider data fresh if updated within last 5 minutes
-        return timeDiff < 5 * 60 * 1000;
+        // Compare versions
+        const localVersion = localData.syncVersion || 0;
+        const cloudVersion = cloudData.syncVersion || 0;
+        
+        if (cloudVersion > localVersion) {
+            // Cloud has newer data, update local
+            this.saveData(cloudData);
+            return true;
+        } else if (localVersion > cloudVersion) {
+            // Local has newer data, update cloud
+            this.saveToCloudStorage(localData);
+            return false;
+        }
+        
+        return false;
+    }
+
+    // Force sync from cloud
+    forceSyncFromCloud() {
+        const cloudData = this.loadFromCloudStorage();
+        if (cloudData) {
+            this.saveData(cloudData);
+            return true;
+        }
+        return false;
     }
 }
 

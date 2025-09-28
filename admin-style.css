@@ -280,6 +280,16 @@ body {
     box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
 }
 
+.sync-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.sync-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
 .menu-categories-admin {
     display: flex;
     gap: 10px;

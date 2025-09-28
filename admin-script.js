@@ -149,6 +149,11 @@ function logout() {
 // Load menu data from API
 function loadMenuData() {
     if (window.tzolentAPI) {
+        // Check for updates from cloud first
+        if (window.tzolentAPI.checkForUpdates()) {
+            console.log('Data updated from cloud storage');
+        }
+        
         // Sync data across devices
         window.tzolentAPI.syncData();
         
@@ -778,24 +783,32 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
+    
+    let backgroundColor = '#3498db'; // Default blue
+    if (type === 'success') backgroundColor = '#2ecc71';
+    if (type === 'error') backgroundColor = '#e74c3c';
+    if (type === 'info') backgroundColor = '#3498db';
+    
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+        background: ${backgroundColor};
         color: white;
         padding: 15px 20px;
         border-radius: 10px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         z-index: 1001;
         font-weight: 500;
+        max-width: 300px;
+        word-wrap: break-word;
     `;
     
     document.body.appendChild(notification);
     
     setTimeout(() => {
         notification.remove();
-    }, 3000);
+    }, 4000);
 }
 
 // Close modal when clicking outside
@@ -827,18 +840,19 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// Auto-sync data every 30 seconds
+// Auto-sync data every 10 seconds for better real-time sync
 setInterval(function() {
-    if (window.tzolentAPI && window.tzolentAPI.checkForUpdates()) {
-        // Data is fresh, no need to reload
-        return;
-    }
-    
-    // Reload data if needed
     if (window.tzolentAPI) {
-        loadMenuData();
+        // Check for updates from cloud
+        if (window.tzolentAPI.checkForUpdates()) {
+            console.log('Syncing data from cloud...');
+            loadMenuData();
+        }
+        
+        // Sync local changes to cloud
+        window.tzolentAPI.syncData();
     }
-}, 30000); // 30 seconds
+}, 10000); // 10 seconds for better sync
 
 // Auto-logout after 30 minutes of inactivity
 let inactivityTimer;
@@ -861,4 +875,23 @@ document.addEventListener('scroll', resetInactivityTimer);
 // Start the timer when dashboard loads
 function startInactivityTimer() {
     resetInactivityTimer();
+}
+
+// Force sync function
+function forceSync() {
+    if (window.tzolentAPI) {
+        showNotification('מסנכרן עם מכשירים אחרים...', 'info');
+        
+        // Force sync from cloud
+        if (window.tzolentAPI.forceSyncFromCloud()) {
+            loadMenuData();
+            showNotification('הסינכרון הושלם בהצלחה!', 'success');
+        } else {
+            // Sync local data to cloud
+            window.tzolentAPI.syncData();
+            showNotification('הנתונים נשמרו לענן', 'success');
+        }
+    } else {
+        showNotification('שגיאה בסינכרון', 'error');
+    }
 }
