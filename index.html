@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>צולנט במדבר - הזמנת אוכל ליום חמישי</title>
+    <meta name="description" content="אתר הזמנת אוכל מעוצב עם מערכת ניהול מתקדמת. תפריט מגוון, עגלת קניות מתקדמת ואנימציות יפות.">
+    <meta name="keywords" content="הזמנת אוכל, מסעדה, תפריט, עגלת קניות, צולנט">
+    <meta name="author" content="צולנט במדבר">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0idXJsKCNncmFkaWVudDBfbGluZWFyXzFfMSkiLz4KPHBhdGggZD0iTTE2IDhDMTIuMTYwOSA4IDkgMTEuMTYwOSA5IDE1VjE3SDIzVjE1QzIzIDExLjE2MDkgMTkuODM5IDggMTYgOFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yMyAxN0g5VjIzSDIzVjE3WiIgZmlsbD0id2hpdGUiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwX2xpbmVhcl8xXzEiIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>צולנט במדבר</h1>
+                <p>יום חמישי בערב</p>
+            </div>
+            <nav class="nav">
+                <a href="#menu" class="nav-link">תפריט</a>
+                <a href="#about" class="nav-link">אודות</a>
+                <a href="#contact" class="nav-link">צור קשר</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">הזמנת אוכל מעולה</h1>
+            <p class="hero-subtitle">טעמים אותנטיים ומגוונים ליום חמישי בערב</p>
+            <button class="cta-button" onclick="scrollToMenu()">
+                <i class="fas fa-utensils"></i>
+                הזמן עכשיו
+            </button>
+        </div>
+        <div class="hero-background">
+            <div class="glass-overlay"></div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="menu-section">
+        <div class="container">
+            <h2 class="section-title">תפריט המנות</h2>
+            <div class="menu-categories">
+                <button class="category-btn active" data-category="all">הכל</button>
+                <button class="category-btn" data-category="main">מנות עיקריות</button>
+                <button class="category-btn" data-category="sides">תוספות</button>
+                <button class="category-btn" data-category="desserts">קינוחים</button>
+                <button class="category-btn" data-category="drinks">משקאות</button>
+            </div>
+            
+            <div class="menu-grid" id="menuGrid">
+                <!-- Menu items will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>עגלת הקניות</h3>
+            <button class="close-cart" onclick="toggleCart()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be populated by JavaScript -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>סה"כ: ₪<span id="cartTotal">0</span></span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">
+                <i class="fas fa-credit-card"></i>
+                סיום הזמנה
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Button -->
+    <button class="cart-button" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cartCount">0</span>
+    </button>
+
+    <!-- Customer Details Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>פרטי הזמנה</h3>
+                <button class="close-modal" onclick="closeCustomerModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="customerForm" class="customer-form">
+                <div class="form-group">
+                    <label>שם מלא:</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>מספר טלפון:</label>
+                    <input type="tel" id="customerPhone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>שיטת תשלום:</label>
+                    <select id="paymentMethod" required>
+                        <option value="">בחר שיטת תשלום</option>
+                        <option value="cash">מזומן</option>
+                        <option value="paybox">PayBox</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeCustomerModal()">ביטול</button>
+                    <button type="submit" class="checkout-btn">סיים הזמנה</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-content">
+                <h2>אודות צולנט במדבר</h2>
+                <p>צולנט במדבר מציעה לכם חוויה קולינרית ייחודית עם מנות אותנטיות ומגוונות. כל מנה מוכנה באהבה ובמקצועיות כדי להעניק לכם טעם בלתי נשכח.</p>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-clock"></i>
+                        <h3>זמן הגשה מהיר</h3>
+                        <p>הזמנות מוכנות תוך 30-45 דקות</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-leaf"></i>
+                        <h3>מרכיבים טריים</h3>
+                        <p>רק המרכיבים הטובים והטריים ביותר</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-heart"></i>
+                        <h3>מוכן באהבה</h3>
+                        <p>כל מנה מוכנה במסירות ובאהבה</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2>צור קשר</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>050-123-4567</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@tzolent.co.il</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>רחוב הדוגמאות 123, תל אביב</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 צולנט במדבר. כל הזכויות שמורות.</p>
+        </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://username.github.io/tzolent-restaurant/sitemap.xml
+
+# Disallow admin panel from search engines
+Disallow: /admin.html
+Disallow: /admin-style.css
+Disallow: /admin-script.js
+Disallow: /security.js

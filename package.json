@@ -1,0 +1,32 @@
+{
+  "name": "tzolent-restaurant",
+  "version": "1.0.0",
+  "description": "אתר הזמנת אוכל מעוצב עם מערכת ניהול מתקדמת",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "dev": "live-server --port=8000 --open=index.html"
+  },
+  "keywords": [
+    "restaurant",
+    "food",
+    "ordering",
+    "hebrew",
+    "glass-morphism",
+    "admin-panel"
+  ],
+  "author": "Tzolent Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/tzolent-restaurant.git"
+  },
+  "homepage": "https://username.github.io/tzolent-restaurant",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

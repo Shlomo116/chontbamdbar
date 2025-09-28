@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול צולנט במדבר - פאנל ניהול</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>צולנט במדבר</h1>
+                <p>פאנל ניהול</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="הכנס סיסמה" required>
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    התחבר
+                </button>
+            </form>
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>ניהול צולנט במדבר</h1>
+                <div class="header-actions">
+                    <button class="save-btn" onclick="saveAllChanges()">
+                        <i class="fas fa-save"></i>
+                        שמור שינויים
+                    </button>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        התנתק
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Menu Management -->
+            <section class="admin-section">
+                <h2>ניהול תפריט</h2>
+                <div class="section-controls">
+                    <button class="add-item-btn" onclick="addNewMenuItem()">
+                        <i class="fas fa-plus"></i>
+                        הוסף פריט חדש
+                    </button>
+                    <button class="refresh-btn" onclick="loadMenuData()">
+                        <i class="fas fa-refresh"></i>
+                        רענן
+                    </button>
+                </div>
+                
+                <div class="menu-categories-admin">
+                    <button class="category-tab active" data-category="main">מנות עיקריות</button>
+                    <button class="category-tab" data-category="sides">תוספות</button>
+                    <button class="category-tab" data-category="desserts">קינוחים</button>
+                    <button class="category-tab" data-category="drinks">משקאות</button>
+                </div>
+
+                <div class="menu-items-admin" id="menuItemsAdmin">
+                    <!-- Menu items will be populated here -->
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section class="admin-section">
+                <h2>הגדרות כלליות</h2>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>שם המסעדה:</label>
+                        <input type="text" id="restaurantName" value="צולנט במדבר">
+                    </div>
+                    <div class="setting-item">
+                        <label>טלפון:</label>
+                        <input type="text" id="restaurantPhone" value="050-123-4567">
+                    </div>
+                    <div class="setting-item">
+                        <label>כתובת:</label>
+                        <input type="text" id="restaurantAddress" value="רחוב הדוגמאות 123, תל אביב">
+                    </div>
+                    <div class="setting-item">
+                        <label>אימייל:</label>
+                        <input type="email" id="restaurantEmail" value="info@tzolent.co.il">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Settings -->
+            <section class="admin-section">
+                <h2>הגדרות אבטחה</h2>
+                <div class="security-settings">
+                    <div class="setting-item">
+                        <label>סיסמה נוכחית:</label>
+                        <input type="password" id="currentPassword" placeholder="הכנס סיסמה נוכחית">
+                    </div>
+                    <div class="setting-item">
+                        <label>סיסמה חדשה:</label>
+                        <input type="password" id="newPassword" placeholder="הכנס סיסמה חדשה">
+                    </div>
+                    <div class="setting-item">
+                        <label>אישור סיסמה:</label>
+                        <input type="password" id="confirmPassword" placeholder="אשר סיסמה חדשה">
+                    </div>
+                    <div class="setting-actions">
+                        <button class="change-password-btn" onclick="changePassword()">
+                            <i class="fas fa-key"></i>
+                            שנה סיסמה
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Management -->
+            <section class="admin-section">
+                <h2>ניהול הזמנות</h2>
+                <div class="orders-container" id="ordersContainer">
+                    <div class="no-orders">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>אין הזמנות עדיין</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>עריכת פריט</h3>
+                <button class="close-modal" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editItemForm" class="edit-form">
+                <input type="hidden" id="editItemId">
+                
+                <div class="form-group">
+                    <label>שם הפריט:</label>
+                    <input type="text" id="editItemName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>תיאור:</label>
+                    <textarea id="editItemDescription" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>מחיר (₪):</label>
+                    <input type="number" id="editItemPrice" min="0" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>קטגוריה:</label>
+                    <select id="editItemCategory" required>
+                        <option value="main">מנות עיקריות</option>
+                        <option value="sides">תוספות</option>
+                        <option value="desserts">קינוחים</option>
+                        <option value="drinks">משקאות</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>אייקון (אמוג'י):</label>
+                    <input type="text" id="editItemIcon" placeholder="🍽️">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeEditModal()">ביטול</button>
+                    <button type="submit" class="save-btn">שמור</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="security.js"></script>
+    <script src="api.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
