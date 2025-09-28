@@ -25,16 +25,18 @@ function verifyPassword(inputPassword) {
 
 // Initialize admin panel
 document.addEventListener('DOMContentLoaded', function() {
-    // Check security session
-    if (window.tzolentSecurity && !window.tzolentSecurity.verifySession()) {
-        // Session expired or invalid, show login screen
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('adminDashboard').style.display = 'none';
-    } else {
+    // Always start with login screen for security
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('adminDashboard').style.display = 'none';
+    
+    // Check if there's a valid session
+    if (window.tzolentSecurity && window.tzolentSecurity.verifySession()) {
         // Valid session, show dashboard
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'block';
         loadMenuData();
+        startInactivityTimer();
+        startInactivityTimer();
     }
     
     setupEventListeners();
@@ -102,6 +104,7 @@ function handleLogin(e) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'block';
         loadMenuData();
+        startInactivityTimer();
     } else {
         // Record failed attempt
         if (window.tzolentSecurity) {
@@ -118,11 +121,11 @@ function handleLogin(e) {
             }
         }
         
-        errorDiv.textContent = 'סיסמה שגויה. הסיסמה הנכונה היא: tzolent2024';
+        errorDiv.textContent = 'סיסמה שגויה';
         errorDiv.classList.add('show');
         setTimeout(() => {
             errorDiv.classList.remove('show');
-        }, 5000);
+        }, 3000);
     }
 }
 
@@ -134,9 +137,12 @@ function logout() {
             window.tzolentSecurity.logSecurityEvent('logout');
         }
         
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('adminDashboard').style.display = 'none';
-        document.getElementById('password').value = '';
+        // Clear all session data
+        localStorage.removeItem('tzolent_session');
+        localStorage.removeItem('tzolent_lockout');
+        
+        // Force reload to clear any cached data
+        window.location.reload();
     }
 }
 
@@ -833,3 +839,26 @@ setInterval(function() {
         loadMenuData();
     }
 }, 30000); // 30 seconds
+
+// Auto-logout after 30 minutes of inactivity
+let inactivityTimer;
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(function() {
+        if (window.tzolentSecurity) {
+            window.tzolentSecurity.destroySession();
+            alert('הסשן פג עקב חוסר פעילות. אנא התחבר מחדש.');
+            window.location.reload();
+        }
+    }, 30 * 60 * 1000); // 30 minutes
+}
+
+// Reset timer on user activity
+document.addEventListener('click', resetInactivityTimer);
+document.addEventListener('keypress', resetInactivityTimer);
+document.addEventListener('scroll', resetInactivityTimer);
+
+// Start the timer when dashboard loads
+function startInactivityTimer() {
+    resetInactivityTimer();
+}
