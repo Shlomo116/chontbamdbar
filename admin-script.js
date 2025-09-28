@@ -327,6 +327,8 @@ function loadDefaultMenuData() {
 function saveMenuData() {
     if (window.tzolentAPI) {
         window.tzolentAPI.saveMenu(menuData);
+        // Force sync to cloud
+        window.tzolentAPI.syncData();
     } else {
         localStorage.setItem('tzolent_menu_data', JSON.stringify(menuData));
     }
@@ -424,6 +426,11 @@ function deleteMenuItem(itemId) {
         saveMenuData();
         renderMenuItems();
         showNotification('הפריט נמחק בהצלחה', 'success');
+        
+        // Force sync to cloud
+        if (window.tzolentAPI) {
+            window.tzolentAPI.syncData();
+        }
     }
 }
 
@@ -443,6 +450,12 @@ function toggleStock(itemId) {
     
     if (item) {
         item.outOfStock = !item.outOfStock;
+        
+        // Force sync to cloud immediately
+        if (window.tzolentAPI) {
+            window.tzolentAPI.syncData();
+        }
+        
         saveMenuData();
         renderMenuItems();
         
@@ -456,6 +469,11 @@ function toggleStock(itemId) {
                 outOfStock: item.outOfStock
             });
         }
+        
+        // Force reload menu data to ensure sync
+        setTimeout(() => {
+            loadMenuData();
+        }, 1000);
     }
 }
 
@@ -544,6 +562,11 @@ function handleEditItem(e) {
     
     const message = currentEditingItem ? 'הפריט עודכן בהצלחה' : 'הפריט נוסף בהצלחה';
     showNotification(message, 'success');
+    
+    // Force sync to cloud
+    if (window.tzolentAPI) {
+        window.tzolentAPI.syncData();
+    }
 }
 
 // Save all changes
@@ -563,6 +586,11 @@ function saveAllChanges() {
     
     saveMenuData();
     saveSettings();
+    
+    // Force sync to cloud
+    if (window.tzolentAPI) {
+        window.tzolentAPI.syncData();
+    }
     
     if (window.tzolentSecurity) {
         window.tzolentSecurity.logSecurityEvent('data_saved');
@@ -603,6 +631,8 @@ function saveSettings() {
     
     if (window.tzolentAPI) {
         window.tzolentAPI.saveSettings(settings);
+        // Force sync to cloud
+        window.tzolentAPI.syncData();
     } else {
         localStorage.setItem('tzolent_settings', JSON.stringify(settings));
     }
@@ -697,6 +727,8 @@ function getPaymentMethodText(paymentMethod) {
 function updateOrderStatus(orderId, status) {
     if (window.tzolentAPI) {
         window.tzolentAPI.updateOrderStatus(orderId, status);
+        // Force sync to cloud
+        window.tzolentAPI.syncData();
         loadOrders();
         showNotification('סטטוס ההזמנה עודכן', 'success');
     }
@@ -707,6 +739,8 @@ function deleteOrder(orderId) {
     if (confirm('האם אתה בטוח שברצונך למחוק הזמנה זו?')) {
         if (window.tzolentAPI) {
             window.tzolentAPI.deleteOrder(orderId);
+            // Force sync to cloud
+            window.tzolentAPI.syncData();
             loadOrders();
             showNotification('ההזמנה נמחקה', 'success');
         }
@@ -903,3 +937,38 @@ function startInactivityTimer() {
 }
 
 // Force sync function is already defined globally above
+
+// Enhanced sync function with better error handling
+window.forceSyncEnhanced = function() {
+    console.log('Enhanced forceSync called');
+    if (window.tzolentAPI) {
+        console.log('API available, starting enhanced sync...');
+        
+        // Check current data
+        const currentData = window.tzolentAPI.getData();
+        const cloudData = window.tzolentAPI.loadFromCloudStorage();
+        
+        console.log('Current data version:', currentData?.syncVersion || 0);
+        console.log('Cloud data version:', cloudData?.syncVersion || 0);
+        
+        // Force sync from cloud
+        if (window.tzolentAPI.forceSyncFromCloud()) {
+            console.log('Synced from cloud');
+            loadMenuData();
+            alert('הסינכרון הושלם בהצלחה! הנתונים עודכנו מהענן.');
+        } else {
+            console.log('Syncing to cloud');
+            // Sync local data to cloud
+            window.tzolentAPI.syncData();
+            alert('הנתונים נשמרו לענן בהצלחה!');
+        }
+        
+        // Reload all data
+        setTimeout(() => {
+            loadMenuData();
+        }, 500);
+    } else {
+        console.log('API not available');
+        alert('שגיאה בסינכרון - API לא זמין');
+    }
+};
