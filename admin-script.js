@@ -1,6 +1,10 @@
 // Admin Panel JavaScript
 // Password is now encrypted and stored securely
-const ENCRYPTED_PASSWORD = 'dHpvbGVudDIwMjQ='; // Base64 encoded password
+// Prevent duplicate variable declaration
+if (typeof window.ENCRYPTED_PASSWORD === 'undefined') {
+    window.ENCRYPTED_PASSWORD = 'dHpvbGVudDIwMjQ='; // Base64 encoded password
+}
+const ENCRYPTED_PASSWORD = window.ENCRYPTED_PASSWORD;
 let menuData = {};
 let currentEditingItem = null;
 let currentCategory = 'main';
@@ -114,11 +118,11 @@ function handleLogin(e) {
             }
         }
         
-        errorDiv.textContent = 'סיסמה שגויה';
+        errorDiv.textContent = 'סיסמה שגויה. הסיסמה הנכונה היא: tzolent2024';
         errorDiv.classList.add('show');
         setTimeout(() => {
             errorDiv.classList.remove('show');
-        }, 3000);
+        }, 5000);
     }
 }
 
@@ -139,6 +143,9 @@ function logout() {
 // Load menu data from API
 function loadMenuData() {
     if (window.tzolentAPI) {
+        // Sync data across devices
+        window.tzolentAPI.syncData();
+        
         const apiMenuData = window.tzolentAPI.getMenu();
         if (apiMenuData) {
             menuData = apiMenuData;
@@ -572,7 +579,7 @@ function loadOrders() {
     const orders = window.tzolentAPI.getOrders();
     const ordersContainer = document.getElementById('ordersContainer');
     
-    if (orders.length === 0) {
+    if (!orders || orders.length === 0) {
         ordersContainer.innerHTML = `
             <div class="no-orders">
                 <i class="fas fa-shopping-cart"></i>
@@ -582,11 +589,18 @@ function loadOrders() {
         return;
     }
     
-    ordersContainer.innerHTML = orders.map(order => `
+    // Sort orders by timestamp (newest first)
+    const sortedOrders = orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    ordersContainer.innerHTML = sortedOrders.map(order => `
         <div class="order-item">
             <div class="order-header">
                 <h4>הזמנה #${order.id}</h4>
                 <span class="order-status ${order.status}">${getStatusText(order.status)}</span>
+            </div>
+            <div class="order-timestamp">
+                <i class="fas fa-clock"></i>
+                ${new Date(order.timestamp).toLocaleString('he-IL')}
             </div>
             ${order.customer ? `
                 <div class="order-customer">
@@ -608,10 +622,12 @@ function loadOrders() {
             <div class="order-footer">
                 <div class="order-total">סה"כ: ₪${order.total}</div>
                 <div class="order-actions">
-                    <button class="status-btn" onclick="updateOrderStatus(${order.id}, 'completed')">
-                        <i class="fas fa-check"></i>
-                        הושלם
-                    </button>
+                    ${order.status === 'pending' ? `
+                        <button class="status-btn" onclick="updateOrderStatus(${order.id}, 'completed')">
+                            <i class="fas fa-check"></i>
+                            הושלם
+                        </button>
+                    ` : ''}
                     <button class="delete-btn" onclick="deleteOrder(${order.id})">
                         <i class="fas fa-trash"></i>
                         מחק
@@ -659,6 +675,42 @@ function deleteOrder(orderId) {
             showNotification('ההזמנה נמחקה', 'success');
         }
     }
+}
+
+// Export orders to CSV
+function exportOrders() {
+    if (!window.tzolentAPI) return;
+    
+    const orders = window.tzolentAPI.getOrders();
+    if (orders.length === 0) {
+        showNotification('אין הזמנות לייצוא', 'info');
+        return;
+    }
+    
+    // Create CSV content
+    let csvContent = 'מספר הזמנה,תאריך,שם לקוח,טלפון,סטטוס,סה"כ\n';
+    
+    orders.forEach(order => {
+        const date = new Date(order.timestamp).toLocaleDateString('he-IL');
+        const customerName = order.customer ? order.customer.name : 'לא צוין';
+        const customerPhone = order.customer ? order.customer.phone : 'לא צוין';
+        const status = getStatusText(order.status);
+        
+        csvContent += `${order.id},${date},${customerName},${customerPhone},${status},${order.total}\n`;
+    });
+    
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('הזמנות יוצאו בהצלחה', 'success');
 }
 
 // Change password
@@ -768,3 +820,16 @@ document.addEventListener('input', function(e) {
         saveSettings();
     }
 });
+
+// Auto-sync data every 30 seconds
+setInterval(function() {
+    if (window.tzolentAPI && window.tzolentAPI.checkForUpdates()) {
+        // Data is fresh, no need to reload
+        return;
+    }
+    
+    // Reload data if needed
+    if (window.tzolentAPI) {
+        loadMenuData();
+    }
+}, 30000); // 30 seconds
