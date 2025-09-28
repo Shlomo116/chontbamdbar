@@ -9,6 +9,31 @@ let menuData = {};
 let currentEditingItem = null;
 let currentCategory = 'main';
 
+// Global function declarations
+window.forceSync = function() {
+    console.log('forceSync called');
+    if (window.tzolentAPI) {
+        console.log('API available, starting sync...');
+        // Simple notification for now
+        alert('מסנכרן עם מכשירים אחרים...');
+        
+        // Force sync from cloud
+        if (window.tzolentAPI.forceSyncFromCloud()) {
+            console.log('Synced from cloud');
+            loadMenuData();
+            alert('הסינכרון הושלם בהצלחה!');
+        } else {
+            console.log('Syncing to cloud');
+            // Sync local data to cloud
+            window.tzolentAPI.syncData();
+            alert('הנתונים נשמרו לענן');
+        }
+    } else {
+        console.log('API not available');
+        alert('שגיאה בסינכרון - API לא זמין');
+    }
+};
+
 // Password encryption/decryption functions
 function encryptPassword(password) {
     return btoa(password); // Base64 encoding
@@ -877,21 +902,4 @@ function startInactivityTimer() {
     resetInactivityTimer();
 }
 
-// Force sync function
-function forceSync() {
-    if (window.tzolentAPI) {
-        showNotification('מסנכרן עם מכשירים אחרים...', 'info');
-        
-        // Force sync from cloud
-        if (window.tzolentAPI.forceSyncFromCloud()) {
-            loadMenuData();
-            showNotification('הסינכרון הושלם בהצלחה!', 'success');
-        } else {
-            // Sync local data to cloud
-            window.tzolentAPI.syncData();
-            showNotification('הנתונים נשמרו לענן', 'success');
-        }
-    } else {
-        showNotification('שגיאה בסינכרון', 'error');
-    }
-}
+// Force sync function is already defined globally above
